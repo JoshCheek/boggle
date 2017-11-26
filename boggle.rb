@@ -10,7 +10,19 @@ def word_score(word)
 end
 
 
-def matches(chars_to_locations, word)
+def adjacent?(prevx, prevy, newx, newy)
+  (prevx-1 == newx && prevy-1 == newy) ||
+  (prevx   == newx && prevy-1 == newy) ||
+  (prevx+1 == newx && prevy-1 == newy) ||
+  (prevx-1 == newx && prevy   == newy) ||
+  (prevx+1 == newx && prevy   == newy) ||
+  (prevx-1 == newx && prevy+1 == newy) ||
+  (prevx   == newx && prevy+1 == newy) ||
+  (prevx+1 == newx && prevy+1 == newy)
+end
+
+
+def matches(word, chars_to_locations)
   chars_to_matches = word.map { |char| chars_to_locations[char] }
   return [] unless chars_to_matches.any?
   return [] unless chars_to_matches.all?
@@ -22,14 +34,7 @@ def matches(chars_to_locations, word)
       prevx, prevy = word_match.last
       char_matches.each do |char_match|
         newx, newy = char_match
-        next unless (prevx-1 == newx && prevy-1 == newy) ||
-                    (prevx   == newx && prevy-1 == newy) ||
-                    (prevx+1 == newx && prevy-1 == newy) ||
-                    (prevx-1 == newx && prevy   == newy) ||
-                    (prevx+1 == newx && prevy   == newy) ||
-                    (prevx-1 == newx && prevy+1 == newy) ||
-                    (prevx   == newx && prevy+1 == newy) ||
-                    (prevx+1 == newx && prevy+1 == newy)
+        next unless adjacent? prevx, prevy, newx, newy
         next if word_match.include? char_match
         new_word_matches << (word_match + [char_match])
       end
