@@ -1,120 +1,48 @@
 #!/usr/bin/env ruby
 require 'set'
 require 'io/console'
-
-require_relative 'boggle'
+require_relative 'boggle_cli'
 
 board = build_board
-chars_to_locations = chars_to_locations(board)
-
-word         = []
-words        = []
-start        = Time.now
-speed        = 1
-over         = false
-red          = 91
-orange       = 93
-green        = 32
-prev_print   = {}
-time_allowed = 60 * 3
+cli = BoggleCli.new(
+  board:      build_board,
+  speed:      1,
+  start_time: Time.now,
+)
 
 # hide / show cursor
-print "\e[?25l"
-at_exit { print "\e[?25h" }
-
-
-# clear the screen
-print "\e[H\e[2J"
-
+print cli.hide_cursor
+at_exit { print cli.show_cursor }
 
 # read chars instead of lines
 $stdin.raw!
 at_exit { $stdin.cooked! }
 
+# blocks until there is a reason to print
+print_the_board = Queue.new << :initial_print
 
-until over
-  to_print = ""
-
-  # read input
-  (readable, *), (writable, *) = IO.select [$stdin], [$stdout]
-  read_from($stdin).chars.each do |char|
-    if quit? char
-      over = true
-    elsif submit_guess? char
-      matches = matches(word, chars_to_locations)
-      words << word if matches.any? && !words.include?(word)
-      word = []
-    elsif word.last == "Q" && (char == "u" || char == "U")
-      word.last << "u"
-    elsif delete? char
-      word.last == 'Qu' ?  word[-1] = 'Q' : word.pop
-    elsif guess? char
-      word << char.upcase
-    end
+# updates the input as it is entered
+input_thread = Thread.new do
+  loop do
+    input = $stdin.readpartial(1000)
+    needs_print = false
+    input.each_char { |char| needs_print ||= cli.add_input char }
+    print_the_board << :input if needs_print
   end
-
-  # quit if we're out of time
-  seconds     = Time.now - start
-  time_passed = (speed * seconds).to_i
-  time_left   = time_allowed - time_passed
-  over        = true if time_left < 0 # allow 1s grace :)
-  time_left   = 0    if time_left < 0 # but report it as still being at zero
-
-  # skip the rest of this if nothing has changed
-  next_print = { word: word.dup, words: words.dup, time_left: time_left }
-  next sleep 0.1 if prev_print == next_print
-  prev_print = next_print
-
-  # find matches
-  matches = matches(word, chars_to_locations)
-
-  # clear screen
-  to_print << "\e[H\e[2J"
-
-  # print the time
-  colour = green
-  colour = orange if time_left <= 30
-  colour = red    if time_left <= 10
-  to_print << "\e[1;14HTime:  \e[#{colour}m%d\e[0m   " % time_left
-
-  # print the number of words found
-  to_print << "\e[2;14HWords: #{words.length}"
-
-  # print the score
-  score = words.reduce(0) { |score, word| score + word_score(word) }
-  to_print << sprintf("\e[3;14HScore: %d", score)
-
-  # print the board
-  to_print << show_board(
-    board,
-    Set.new(matches.flatten 1),
-    Set.new(matches.map &:last),
-  )
-
-  # print the word
-  if matches.any? || word.empty?
-    to_print << "\e[92m" # bright green
-  else
-    to_print << "\e[91m" # bright red
-  end
-  to_print << "\r\n" << "> " << word.join.downcase << "\e[0m\r\n" << "\r\n"
-
-  # print the words
-  cols, rows = $stdin.winsize
-  cols -= 7 # for the stuff previously printed
-  xoffset = 1
-  words.each_slice(cols) do |word_set|
-    max_score = 0
-    word_set.each.with_index(8) do |word, yoffset|
-      score = word_score(word)
-      max_score = score if max_score < score
-      to_print << "\e[#{yoffset};#{xoffset}H%2d #{word.join.downcase}" % score
-    end
-    xoffset += max_score.to_s.length
-    xoffset += word_set.map(&:length).max + 3 # for the gap between words
-  end
-
-  print to_print
 end
 
-print "\r\n\n\e[41;97m GAME OVER!! \e[0m\e[J\r\n"
+# updates the time as it changes
+time_thread = Thread.new do
+  loop do
+    sleep 1
+    print_the_board << :time if cli.update_time Time.now
+  end
+end
+
+until cli.over?
+  print_the_board.shift # wait until we're told to print
+  print_the_board.clear # we only need to be told once, y'all
+  $stdout.print cli.to_s $stdin.winsize
+end
+
+print cli.final_screen $stdin.winsize
