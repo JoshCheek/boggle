@@ -150,10 +150,12 @@ until over
   end
 
   # quit if we're out of time
-  seconds   = Time.now - start
-  time_left = 120-(speed*seconds).to_i
-  time_left = 0    if time_left < 0
-  over      = true if time_left.zero?
+  seconds      = Time.now - start
+  time_allowed = 60 * 3
+  time_passed  = (speed * seconds).to_i
+  time_left    = time_allowed - time_passed
+  over         = true if time_left < 0 # allow 1s grace :)
+  time_left    = 0    if time_left < 0 # but report it as still being at zero
 
   # skip the rest of this if nothing has changed
   next_print = {
