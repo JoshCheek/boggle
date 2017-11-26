@@ -63,22 +63,22 @@ def show_board(board, coloured_locations)
 end
 
 dice = [
-  %w[R  I F O B X],
-  %w[I  F E H E Y],
-  %w[D  E N O W S],
-  %w[U  T O K N D],
-  %w[H  M S R A O],
-  %w[L  U P E T S],
-  %w[A  C I T O A],
-  %w[Y  L G K U E],
-  %w[E  H I S P N],
-  %w[V  E T I G N],
-  %w[B  A L I Y T],
-  %w[E  Z A V N D],
-  %w[R  A L E S C],
-  %w[U  W I L R G],
-  %w[P  A C E M D],
-  %w[Qu B M J O A],
+  %w[A A E E G N],
+  %w[A B B J O O],
+  %w[A C H O P S],
+  %w[A F F K P S],
+  %w[A O O T T W],
+  %w[C I M O T U],
+  %w[D E I L R X],
+  %w[D E L R V Y],
+  %w[D I S T T Y],
+  %w[E E G H N W],
+  %w[E E I N S U],
+  %w[E H R T V W],
+  %w[E I O S S T],
+  %w[E L R T T Y],
+  %w[H I M N U Qu],
+  %w[H L N N R Z],
 ]
 
 board = nil
