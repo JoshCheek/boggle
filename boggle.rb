@@ -88,7 +88,7 @@ def quit?(char)
   false
 end
 
-def submit?(char)
+def submit_guess?(char)
   char == "\r" || char == "\n"
 end
 

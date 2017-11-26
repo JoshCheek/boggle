@@ -165,11 +165,11 @@ RSpec.describe 'Boggle' do
       expect(quit?       "").to eq false
     end
 
-    specify 'submit? is true for return' do
-      expect(submit? "\r").to eq true
-      expect(submit? "\n").to eq true
-      expect(submit?   "").to eq false
-      expect(submit?  "x").to eq false
+    specify 'submit_guess? is true for return' do
+      expect(submit_guess? "\r").to eq true
+      expect(submit_guess? "\n").to eq true
+      expect(submit_guess?   "").to eq false
+      expect(submit_guess?  "x").to eq false
     end
 
     specify 'delete? is true for 0x7F' do

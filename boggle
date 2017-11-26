@@ -40,12 +40,11 @@ until over
   read_from($stdin).chars.each do |char|
     if quit? char
       over = true
-    elsif submit? char
+    elsif submit_guess? char
       matches = matches(word, chars_to_locations)
       words << word if matches.any? && !words.include?(word)
       word = []
-    # b/c "Qu" is grouped as a single char, check for that case
-    elsif (char == "u" || char == "U") && word.last == "Q"
+    elsif word.last == "Q" && (char == "u" || char == "U")
       word.last << "u"
     elsif delete? char
       word.last == 'Qu' ?  word[-1] = 'Q' : word.pop
@@ -55,11 +54,11 @@ until over
   end
 
   # quit if we're out of time
-  seconds      = Time.now - start
-  time_passed  = (speed * seconds).to_i
-  time_left    = time_allowed - time_passed
-  over         = true if time_left < 0 # allow 1s grace :)
-  time_left    = 0    if time_left < 0 # but report it as still being at zero
+  seconds     = Time.now - start
+  time_passed = (speed * seconds).to_i
+  time_left   = time_allowed - time_passed
+  over        = true if time_left < 0 # allow 1s grace :)
+  time_left   = 0    if time_left < 0 # but report it as still being at zero
 
   # skip the rest of this if nothing has changed
   next_print = { word: word.dup, words: words.dup, time_left: time_left }
@@ -73,8 +72,10 @@ until over
   to_print << "\e[H\e[2J"
 
   # print the time
-  colour = time_left <= 10 ? red : time_left <= 30 ? orange : green
-  to_print << sprintf("\e[1;14HTime:  \e[#{colour}m%d\e[0m   ", time_left)
+  colour = green
+  colour = orange if time_left <= 30
+  colour = red    if time_left <= 10
+  to_print << "\e[1;14HTime:  \e[#{colour}m%d\e[0m   " % time_left
 
   # print the number of words found
   to_print << "\e[2;14HWords: #{words.length}"
