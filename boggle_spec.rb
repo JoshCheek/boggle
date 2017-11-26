@@ -172,8 +172,8 @@ RSpec.describe 'Boggle' do
       expect(submit_guess?  "x").to eq false
     end
 
-    specify 'delete? is true for 0x7F' do
-      expect(delete? "\x7f".encode("ascii-8bit")).to eq true
+    specify 'delete? is true for 0x7F and C-u' do
+      expect(delete? "\u007f".encode("ascii-8bit")).to eq true
       expect(delete? "\u007f").to eq true
       expect(delete? "").to eq false
       expect(delete? "x").to eq false
@@ -190,19 +190,19 @@ RSpec.describe 'Boggle' do
       expect(guess?   "").to eq false
       expect(guess?  nil).to eq false
     end
-  end
 
-
-  describe 'read_from' do
-    it 'returns whatever is on the stream' do
-      read, write = IO.pipe
-      write.print "abc\ndef"
-      expect(read_from read).to eq "abc\ndef"
-    end
-
-    it 'returns an empty string when nothing is on the stream' do
-      read, write = IO.pipe
-      expect(read_from read).to eq ""
+    specify 'cancel_guess? is true for C-u, or C-c when there is input' do
+      expect(cancel_guess? [], ?\C-u.encode("ascii-8bit")).to eq true
+      expect(cancel_guess? [], ?\C-u).to eq true
+      expect(cancel_guess? ['a'], ?\C-u).to eq true
+      expect(cancel_guess? ['a'], ?\C-c.encode("ascii-8bit")).to eq true
+      expect(cancel_guess? ['a'], ?\C-c).to eq true
+      expect(cancel_guess? [], ?\C-c.encode("ascii-8bit")).to eq false
+      expect(cancel_guess? [], ?\C-c).to eq false
+      expect(cancel_guess? [], 'x').to eq false
+      expect(cancel_guess? ['a'], 'x').to eq false
+      expect(cancel_guess? [], '').to eq false
+      expect(cancel_guess? ['a'], '').to eq false
     end
   end
 

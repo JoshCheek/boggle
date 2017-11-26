@@ -18,30 +18,28 @@ at_exit { print cli.show_cursor }
 $stdin.raw!
 at_exit { $stdin.cooked! }
 
-# blocks until there is a reason to print
-print_the_board = Queue.new << :initial_print
+# blocks the main thread until we need to reprint
+print_board = Queue.new << :initial_print
 
-# updates the input as it is entered
-input_thread = Thread.new do
+Thread.new do
   loop do
     input = $stdin.readpartial(1000)
     needs_print = false
     input.each_char { |char| needs_print ||= cli.add_input char }
-    print_the_board << :input if needs_print
+    print_board << :input if needs_print
   end
 end
 
-# updates the time as it changes
-time_thread = Thread.new do
+Thread.new do
   loop do
-    sleep 1
-    print_the_board << :time if cli.update_time Time.now
+    sleep 1.0/cli.speed
+    print_board << :time if cli.update_time Time.now
   end
 end
 
 until cli.over?
-  print_the_board.shift # wait until we're told to print
-  print_the_board.clear # we only need to be told once, y'all
+  print_board.shift # wait until we're told to print
+  print_board.clear # we only need to be told once, y'all
   $stdout.print cli.to_s $stdin.winsize
 end
 

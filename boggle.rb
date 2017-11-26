@@ -46,27 +46,6 @@ def matches(word, chars_to_locations)
 end
 
 
-def show_board(board, path, heads)
-  str = ""
-  board.map.with_index do |row, y|
-    str << "\e[#{y+1}H"
-    row.each.with_index do |char, x|
-      cell = [x, y]
-      if heads.include? cell
-        colour_on  = "\e[46;95m"
-      elsif path.include? cell
-        colour_on  = "\e[35m"
-      end
-      colour_off = "\e[0m"
-      padding    = ""
-      padding    = " " unless char.length == 2 # line them up with 2 chars b/c of "Qu"
-      str << "#{colour_on}#{char}#{colour_off}#{padding} "
-    end
-    str << "\r\n"
-  end
-  str
-end
-
 
 def build_board
   DICE.shuffle.each_slice(4).map { |row| row.map &:sample }
@@ -81,11 +60,27 @@ def chars_to_locations(board)
        .to_h
 end
 
-def quit?(char)
+def interrupt?(char)
   return false if char.empty?
-  return true  if char.ord == 3 # C-c
-  return true  if char.ord == 4 # C-d
+  char.ord == 3
+end
+
+def eos?(char)
+  return false if char.empty?
+  char.ord == 4 # C-d
+end
+
+def quit?(char)
+  return true if interrupt? char
+  return true if eos? char
   false
+end
+
+def cancel_guess?(word, char)
+  return false if char.empty?
+  return true  if char.ord == 0x15
+  return false if word.empty?
+  interrupt? char
 end
 
 def submit_guess?(char)
@@ -95,16 +90,6 @@ end
 def delete?(char)
   return false if char.empty?
   char.ord == 0x7F
-end
-
-
-read, write = IO.pipe
-write.print 'SENTINEL'
-SENTINEL = read
-def read_from(stream)
-  readables, * = IO.select [stream, SENTINEL]
-  return '' unless readables.include? stream
-  stream.readpartial 1000
 end
 
 def guess?(char)
