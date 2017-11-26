@@ -39,7 +39,7 @@ until over
   if readable
     readable.readpartial(100).chars.each do |char|
       # Quit on C-c and C-d
-      if char.ord == 3 || char.ord == 4
+      if interrupt?(char) || eof?(char)
         over = true
       # Return submits theword
       elsif char == "\r" || char == "\n"

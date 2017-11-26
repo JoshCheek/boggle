@@ -67,9 +67,11 @@ def show_board(board, path, heads)
   str
 end
 
+
 def build_board
   DICE.shuffle.each_slice(4).map { |row| row.map &:sample }
 end
+
 
 def chars_to_locations(board)
   board.flat_map
@@ -77,6 +79,16 @@ def chars_to_locations(board)
        .group_by { |char, *| char }
        .each { |_c, matches| matches.map &:shift }
        .to_h
+end
+
+
+def interrupt?(char)
+  char.ord == 3
+end
+
+
+def eof?(char)
+  char.ord == 4
 end
 
 

@@ -152,4 +152,24 @@ RSpec.describe 'Boggle' do
       end
     end
   end
+
+
+  describe 'interrupt?' do
+    it 'is true for \x03 and \u0003' do
+      expect(interrupt? "\u0003".encode("ascii-8bit")).to eq true
+      expect(interrupt? "\u0003").to eq true
+      expect(interrupt? "\u0002").to eq false
+      expect(interrupt? "\u0004").to eq false
+    end
+  end
+
+
+  describe 'eof?' do
+    it 'is true for \x04 and \u0004' do
+      expect(eof? "\u0004".encode("ascii-8bit")).to eq true
+      expect(eof? "\u0004").to eq true
+      expect(eof? "\u0003").to eq false
+      expect(eof? "\u0005").to eq false
+    end
+  end
 end
