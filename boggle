@@ -115,11 +115,14 @@ until over
   to_print << show_board(board, coloured_locations)
 
   # print the word
-  to_print << word.join.downcase << "\r\n"
+  if matches.any? || word.empty?
+    to_print << "\e[92m" # bright green
+  else
+    to_print << "\e[91m" # bright red
+  end
+  to_print << "\r\n> " << word.join.downcase << "\e[0m\r\n" << "\r\n"
 
   # print the words
-  to_print << "-----  words  -----\r\n"
-
   cols, rows = $stdin.winsize
   cols -= 7 # for the stuff previously printed
   xoffset = 1
