@@ -46,17 +46,20 @@ def matches(word, chars_to_locations)
 end
 
 
-def show_board(board, coloured_locations)
+def show_board(board, path, heads)
   str = ""
   board.map.with_index do |row, y|
     str << "\e[#{y+1}H"
     row.each.with_index do |char, x|
-      if coloured_locations.include? [x, y]
-        colour_on  = "\e[46;97m"
-        colour_off = "\e[0m"
+      cell = [x, y]
+      if heads.include? cell
+        colour_on  = "\e[46;95m"
+      elsif path.include? cell
+        colour_on  = "\e[35m"
       end
-      padding = ""
-      padding = " " unless char.length == 2 # line them up with 2 chars b/c of "Qu"
+      colour_off = "\e[0m"
+      padding    = ""
+      padding    = " " unless char.length == 2 # line them up with 2 chars b/c of "Qu"
       str << "#{colour_on}#{char}#{colour_off}#{padding} "
     end
     str << "\r\n"

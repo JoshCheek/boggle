@@ -56,7 +56,7 @@ until over
         over = true
       # Return submits theword
       elsif char == "\r" || char == "\n"
-        matches = matches(chars_to_locations, word)
+        matches = matches(word, chars_to_locations)
         words << word if matches.any? && !words.include?(word)
         word = []
       # b/c "Qu" is grouped as a single char, check for that case
@@ -94,25 +94,27 @@ until over
   end
 
   # find matches
-  matches = matches(chars_to_locations, word)
-  coloured_locations = Set.new matches.flat_map { |w| w }
+  matches = matches(word, chars_to_locations)
 
   # clear screen
   to_print << "\e[H\e[2J"
 
   # print the time
   colour = time_left <= 10 ? red : time_left <= 30 ? orange : green
-  to_print << sprintf("\e[1;13HTime:  \e[#{colour}m%d\e[0m   ", time_left)
+  to_print << sprintf("\e[1;14HTime:  \e[#{colour}m%d\e[0m   ", time_left)
 
   # print the number of words found
-  to_print << "\e[2;13HWords: #{words.length}"
+  to_print << "\e[2;14HWords: #{words.length}"
 
   # print the score
   score = words.reduce(0) { |score, word| score + word_score(word) }
-  to_print << sprintf("\e[3;13HScore: %d", score)
+  to_print << sprintf("\e[3;14HScore: %d", score)
 
   # print the board
-  to_print << show_board(board, coloured_locations)
+  path_locations = Set.new matches.flatten(1)
+  head_locations = Set.new matches.map(&:last)
+
+  to_print << show_board(board, path_locations, head_locations)
 
   # print the word
   if matches.any? || word.empty?
