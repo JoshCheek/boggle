@@ -81,14 +81,34 @@ def chars_to_locations(board)
        .to_h
 end
 
+def quit?(char)
+  return false if char.empty?
+  return true  if char.ord == 3 # C-c
+  return true  if char.ord == 4 # C-d
+  false
+end
 
-def interrupt?(char)
-  char.ord == 3
+def submit?(char)
+  char == "\r" || char == "\n"
+end
+
+def delete?(char)
+  return false if char.empty?
+  char.ord == 0x7F
 end
 
 
-def eof?(char)
-  char.ord == 4
+read, write = IO.pipe
+write.print 'SENTINEL'
+SENTINEL = read
+def read_from(stream)
+  readables, * = IO.select [stream, SENTINEL]
+  return '' unless readables.include? stream
+  stream.readpartial 1000
+end
+
+def guess?(char)
+  char.to_s.match? /[a-z]/i
 end
 
 

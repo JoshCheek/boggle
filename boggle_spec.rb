@@ -154,22 +154,57 @@ RSpec.describe 'Boggle' do
   end
 
 
-  describe 'interrupt?' do
-    it 'is true for \x03 and \u0003' do
-      expect(interrupt? "\u0003".encode("ascii-8bit")).to eq true
-      expect(interrupt? "\u0003").to eq true
-      expect(interrupt? "\u0002").to eq false
-      expect(interrupt? "\u0004").to eq false
+  describe 'input evaluation' do
+    specify "quit? is true for C-c and C-d" do
+      expect(quit? "\u0003".encode("ascii-8bit")).to eq true
+      expect(quit? "\u0003").to eq true
+      expect(quit? "\u0004".encode("ascii-8bit")).to eq true
+      expect(quit? "\u0004").to eq true
+      expect(quit? "\u0002").to eq false
+      expect(quit? "\u0005").to eq false
+      expect(quit?       "").to eq false
+    end
+
+    specify 'submit? is true for return' do
+      expect(submit? "\r").to eq true
+      expect(submit? "\n").to eq true
+      expect(submit?   "").to eq false
+      expect(submit?  "x").to eq false
+    end
+
+    specify 'delete? is true for 0x7F' do
+      expect(delete? "\x7f".encode("ascii-8bit")).to eq true
+      expect(delete? "\u007f").to eq true
+      expect(delete? "").to eq false
+      expect(delete? "x").to eq false
+    end
+
+    specify 'guess? is true for a-z, A-Z' do
+      "a".upto "z" do |char|
+        expect(guess? char.downcase).to eq true
+        expect(guess? char.upcase).to eq true
+      end
+      expect(guess?  ".").to eq false
+      expect(guess?  "[").to eq false
+      expect(guess? "\e").to eq false
+      expect(guess?   "").to eq false
+      expect(guess?  nil).to eq false
     end
   end
 
 
-  describe 'eof?' do
-    it 'is true for \x04 and \u0004' do
-      expect(eof? "\u0004".encode("ascii-8bit")).to eq true
-      expect(eof? "\u0004").to eq true
-      expect(eof? "\u0003").to eq false
-      expect(eof? "\u0005").to eq false
+  describe 'read_from' do
+    it 'returns whatever is on the stream' do
+      read, write = IO.pipe
+      write.print "abc\ndef"
+      expect(read_from read).to eq "abc\ndef"
+    end
+
+    it 'returns an empty string when nothing is on the stream' do
+      read, write = IO.pipe
+      expect(read_from read).to eq ""
     end
   end
+
+
 end
