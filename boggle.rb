@@ -67,6 +67,18 @@ def show_board(board, path, heads)
   str
 end
 
+def build_board
+  DICE.shuffle.each_slice(4).map { |row| row.map &:sample }
+end
+
+def chars_to_locations(board)
+  board.flat_map
+       .with_index { |row, y| row.map.with_index { |c, x| [c, x, y] } }
+       .group_by { |char, *| char }
+       .each { |_c, matches| matches.map &:shift }
+       .to_h
+end
+
 
 DICE = [
   %w[A A E E G N],

@@ -4,21 +4,8 @@ require 'io/console'
 
 require_relative 'boggle'
 
-board = nil
-loop do
-  board = DICE.shuffle.each_slice(4).map { |row| row.map(&:sample) }
-  chars = board.flatten.map(&:downcase)
-  break if ARGV.all? { |char| chars.include? char.downcase }
-end
-
-char_locations = board.flat_map.with_index do |row, y|
-  row.map.with_index { |char, x| [char, x, y] }
-end
-chars_to_locations = char_locations.group_by do |char, *|
-  char
-end.map do |char, matches|
-  [char, matches.map { |_char, x, y| [x, y] }]
-end.to_h
+board = build_board
+chars_to_locations = chars_to_locations(board)
 
 word       = []
 words      = []

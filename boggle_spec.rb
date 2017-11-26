@@ -116,4 +116,40 @@ RSpec.describe 'Boggle' do
       end
     end
   end
+
+
+  describe 'build_board' do
+    it 'builds a 4x4 board from the dice' do
+      board = build_board
+      expect(board.length).to eq 4
+      board.each { |row| expect(row.length).to eq 4 }
+      dice_chars = DICE.flatten
+      board.flatten.all? do |face|
+        expect(dice_chars).to include face
+      end
+    end
+
+    it 'is random' do
+      expect(build_board).to_not eq build_board
+    end
+  end
+
+
+  describe 'chars_to_locations' do
+    it 'has keys of the characters on the board' do
+      board       = build_board
+      board_chars = board.flatten.uniq
+      keys        = chars_to_locations(board).keys
+      keys.each { |key| expect(board_chars).to include key }
+    end
+
+    it 'has values of the locations of those characters' do
+      board = build_board
+      chars_to_locations(board).each do |char, locations|
+        locations.each do |x, y|
+          expect(board[y][x]).to eq char
+        end
+      end
+    end
+  end
 end
