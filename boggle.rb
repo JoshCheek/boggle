@@ -1,3 +1,28 @@
+DICE = [
+  %w[A A E E G N],
+  %w[A B B J O O],
+  %w[A C H O P S],
+  %w[A F F K P S],
+  %w[A O O T T W],
+  %w[C I M O T U],
+  %w[D E I L R X],
+  %w[D E L R V Y],
+  %w[D I S T T Y],
+  %w[E E G H N W],
+  %w[E E I N S U],
+  %w[E H R T V W],
+  %w[E I O S S T],
+  %w[E L R T T Y],
+  %w[H I M N U Qu],
+  %w[H L N N R Z],
+]
+
+
+def build_board
+  DICE.shuffle.each_slice(4).map { |row| row.map &:sample }
+end
+
+
 def word_score(word)
   case word.length
   when 0, 1, 2 then  0
@@ -10,54 +35,37 @@ def word_score(word)
 end
 
 
-def adjacent?(prevx, prevy, newx, newy)
-  (prevx-1 == newx && prevy-1 == newy) ||
-  (prevx   == newx && prevy-1 == newy) ||
-  (prevx+1 == newx && prevy-1 == newy) ||
-  (prevx-1 == newx && prevy   == newy) ||
-  (prevx+1 == newx && prevy   == newy) ||
-  (prevx-1 == newx && prevy+1 == newy) ||
-  (prevx   == newx && prevy+1 == newy) ||
-  (prevx+1 == newx && prevy+1 == newy)
+def adjacent?(x1, y1, x2, y2)
+  (x1-1==x2 && y1-1==y2) || (x1==x2 && y1-1==y2) || (x1+1==x2 && y1-1==y2) ||
+  (x1-1==x2 && y1  ==y2) ||                         (x1+1==x2 && y1  ==y2) ||
+  (x1-1==x2 && y1+1==y2) || (x1==x2 && y1+1==y2) || (x1+1==x2 && y1+1==y2)
 end
 
 
 def matches(word, chars_to_locations)
-  chars_to_matches = word.map { |char| chars_to_locations[char] }
-  return [] unless chars_to_matches.any?
-  return [] unless chars_to_matches.all?
-  word_matches = chars_to_matches.shift.map { |char_match| [char_match] }
+  locations = word.map { |char| chars_to_locations[char] }
+  return [] unless locations.any? && locations.all?
+  first = locations.first.map { |l| [l] }
+  rest  = locations.drop 1
 
-  chars_to_matches.each do |char_matches|
-    new_word_matches = []
-    word_matches.each do |word_match|
-      prevx, prevy = word_match.last
+  rest.reduce first do |word_matches, char_matches|
+    word_matches.each_with_object [] do |word_match, next_word_matches|
       char_matches.each do |char_match|
-        newx, newy = char_match
-        next unless adjacent? prevx, prevy, newx, newy
+        next unless adjacent? *word_match.last, *char_match
         next if word_match.include? char_match
-        new_word_matches << (word_match + [char_match])
+        next_word_matches << (word_match + [char_match])
       end
     end
-    word_matches = new_word_matches
   end
-
-  word_matches
 end
 
-
-
-def build_board
-  DICE.shuffle.each_slice(4).map { |row| row.map &:sample }
-end
 
 
 def chars_to_locations(board)
   board.flat_map
        .with_index { |row, y| row.map.with_index { |c, x| [c, x, y] } }
        .group_by { |char, *| char }
-       .each { |_c, matches| matches.map &:shift }
-       .to_h
+       .each { |_c, matches| matches.each &:shift }
 end
 
 def interrupt?(char)
@@ -96,22 +104,3 @@ def guess?(char)
   char.to_s.match? /[a-z]/i
 end
 
-
-DICE = [
-  %w[A A E E G N],
-  %w[A B B J O O],
-  %w[A C H O P S],
-  %w[A F F K P S],
-  %w[A O O T T W],
-  %w[C I M O T U],
-  %w[D E I L R X],
-  %w[D E L R V Y],
-  %w[D I S T T Y],
-  %w[E E G H N W],
-  %w[E E I N S U],
-  %w[E H R T V W],
-  %w[E I O S S T],
-  %w[E L R T T Y],
-  %w[H I M N U Qu],
-  %w[H L N N R Z],
-]

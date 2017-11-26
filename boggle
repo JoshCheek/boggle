@@ -3,7 +3,6 @@ require 'set'
 require 'io/console'
 require_relative 'boggle_cli'
 
-board = build_board
 cli = BoggleCli.new(
   board:      build_board,
   speed:      1,

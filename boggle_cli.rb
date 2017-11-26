@@ -45,14 +45,6 @@ class BoggleCli
     end
   end
 
-  def hide_cursor
-    "\e[?25l"
-  end
-
-  def show_cursor
-    "\e[?25h"
-  end
-
   # returns true if this changes what would be drawn
   def update_time(time)
     prev_time_left   = time_left
@@ -116,6 +108,14 @@ class BoggleCli
     end
 
     to_print
+  end
+
+  def hide_cursor
+    "\e[?25l"
+  end
+
+  def show_cursor
+    "\e[?25h"
   end
 
   def final_screen(winsize)
