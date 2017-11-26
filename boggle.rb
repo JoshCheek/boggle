@@ -217,5 +217,4 @@ until over
   print to_print
 end
 
-puts "\r\n\n\e[41;97m GAME OVER!! \e[0m\e[J"
-puts
+print "\r\n\n\e[41;97m GAME OVER!! \e[0m\e[J\r\n"
