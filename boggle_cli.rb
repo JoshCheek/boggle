@@ -83,7 +83,7 @@ class BoggleCli
     to_print << "\e[2;14HWords: #{words.length}"
 
     # print the score
-    score = words.reduce(0) { |score, word| score + word_score(word) }
+    score = total_score
     to_print << sprintf("\e[3;14HScore: %d", score)
 
     # find matches
@@ -119,7 +119,7 @@ class BoggleCli
   end
 
   def final_screen(winsize)
-    to_s(winsize) << "\r\n\n\e[41;97m GAME OVER!! \e[0m\e[J\r\n"
+    to_s(winsize) << "\r\n\n\e[41;97m YOU SCORED #{total_score}!! \e[0m\e[J\r\n"
   end
 
   def time_colour
@@ -130,25 +130,29 @@ class BoggleCli
   end
 
   def show_board(matches)
-    path_locations = Set.new(matches.flatten 1),
-    head_locations = Set.new(matches.map &:last),
+    path_locations = Set.new(matches.flatten 1)
+    head_locations = Set.new(matches.map &:last)
     str = ""
     board.map.with_index do |row, y|
       str << "\e[#{y+1}H"
       row.each.with_index do |char, x|
         cell = [x, y]
         if head_locations.include? cell
-          colour_on = "\e[46;95m"
+          colour_on = "\e[44;97m"
         elsif path_locations.include? cell
-          colour_on = "\e[35m"
+          colour_on = "\e[34m"
+        else
+          colour_on = "\e[95m"
         end
-        colour_off = "\e[0m"
-        padding    = ""
-        padding    = " " unless char.length == 2 # line them up with 2 chars b/c of "Qu"
-        str << "#{colour_on}#{char}#{colour_off}#{padding} "
+        padding = ""
+        padding = " " unless char.length == 2 # line them up with 2 chars b/c of "Qu"
+        str << " #{colour_on}#{char}\e[49;39m#{padding}"
       end
-      str << "\r\n"
     end
     str
+  end
+
+  def total_score
+    words.reduce(0) { |score, word| score + word_score(word) }
   end
 end
