@@ -90,7 +90,7 @@ class BoggleCli
     else
       to_print << "\e[91m" # bright red
     end
-    to_print << "\r\n" << "> " << word.join.downcase << "\e[0m\r\n" << "\r\n"
+    to_print << "\e[6H > " << word.join.downcase << "\e[0m"
 
     # print the words
     cols, rows = winsize
