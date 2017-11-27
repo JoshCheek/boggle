@@ -1,14 +1,14 @@
 require_relative 'boggle'
 
 class BoggleCli
-  def initialize(board:, speed:, start_time:)
+  def initialize(board:, speed:, start_time:, duration:)
     self.board          = board
     self.word           = []
     self.words          = []
     self.start          = start_time
     self.speed          = speed
     self.over           = false
-    self.time_allowed   = 60 * 3
+    self.time_allowed   = duration
     self.char_locations = chars_to_locations board
     update_time start_time
   end

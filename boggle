@@ -6,6 +6,7 @@ require_relative 'boggle_cli'
 cli = BoggleCli.new(
   board:      build_board,
   speed:      1,
+  duration:   60 * 2, # seconds
   start_time: Time.now,
 )
 
