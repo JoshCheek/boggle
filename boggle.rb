@@ -101,6 +101,5 @@ def delete?(char)
 end
 
 def guess?(char)
-  char.to_s.match? /[a-z]/i
+  !(char.to_s.match /[a-z]/i).nil?
 end
-

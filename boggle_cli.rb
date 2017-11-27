@@ -119,7 +119,11 @@ class BoggleCli
   end
 
   def final_screen(winsize)
-    to_s(winsize) << "\r\n\n\e[41;97m YOU SCORED #{total_score}!! \e[0m\e[J\r\n"
+    wordlist_rows, x = winsize
+    wordlist_rows -= 8 # for the stuff previously printed
+    wordlist_rows = [wordlist_rows, words.size].min
+
+    to_s(winsize) << "\r#{"\n"*wordlist_rows}\e[41;97m YOU SCORED #{total_score}!! \e[0m\e[J\r\n"
   end
 
   def time_colour
