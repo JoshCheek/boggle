@@ -4,7 +4,7 @@ require_relative 'boggle'
 class Boggle::Cli
   include Boggle
 
-  def initialize(board:, speed:, start_time:, duration:)
+  def initialize(board:, speed:, start_time:, duration:, winsize:)
     self.board          = board
     self.word           = []
     self.words          = []
@@ -13,6 +13,7 @@ class Boggle::Cli
     self.over           = false
     self.time_allowed   = duration
     self.char_locations = chars_to_locations board
+    self.winsize        = winsize
     update_time start_time
   end
 
@@ -29,7 +30,7 @@ class Boggle::Cli
   end
 
 
-  def to_s(winsize)
+  def to_s
     # build up the board
     to_print = ""
 
@@ -37,7 +38,7 @@ class Boggle::Cli
     to_print << "\e[H\e[2J"
 
     # print the time
-    to_print << "\e[1;14HTime:  #{time_colour}%d\e[0m   " % time_left
+    to_print << show_time
 
     # print the number of words found
     to_print << "\e[2;14HWords: #{words.length}"
@@ -95,30 +96,26 @@ class Boggle::Cli
   end
 
 
-  # returns true if this changes what would be drawn
+  def show_time
+    "\e[1;14HTime:  #{time_colour}%d\e[0m   " % time_left
+  end
+
+
   def add_input(char)
     if cancel_guess? word, char
       self.word = []
-      true
     elsif quit? char
       self.over = true
-      true
     elsif submit_guess? char
       matches = path_matches word, char_locations
       words << word if matches.any? && !words.include?(word)
       self.word = []
-      true
     elsif word.last == "Q" && (char == "u" || char == "U")
       word.last << "u"
-      true
     elsif delete? char
       word.last == 'Qu' ?  word[-1] = 'Q' : word.pop
-      true
     elsif guess? char
       word << char.upcase
-      true
-    else
-      false
     end
   end
 
@@ -126,16 +123,18 @@ class Boggle::Cli
     wordlist_rows, x = winsize
     wordlist_rows -= 8 # for the stuff previously printed
     wordlist_rows = [wordlist_rows, words.size].min
-    to_s(winsize) << "\r#{"\n"*wordlist_rows}\e[41;97m YOU SCORED #{total_score}!! \e[0m\e[J\r\n"
+    to_s << "\r#{"\n"*wordlist_rows}\e[41;97m YOU SCORED #{total_score}!! \e[0m\e[J\r\n"
   end
 
   attr_reader :speed
+  attr_writer :winsize
 
   private
 
   attr_accessor :board, :char_locations, :word, :words
   attr_accessor :start, :time_allowed, :now, :time_left, :over
   attr_writer   :speed
+  attr_reader   :winsize
 
   def time_colour
     colour = 92                    # green

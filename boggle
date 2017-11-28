@@ -7,6 +7,7 @@ cli = Boggle::Cli.new(
   speed:      1,
   duration:   2 * 60, # seconds
   start_time: Time.now,
+  winsize:    $stdin.winsize,
 )
 
 # hide / show cursor
@@ -17,27 +18,40 @@ at_exit { print cli.show_cursor }
 $stdin.raw!
 at_exit { $stdin.cooked! }
 
-printer = Thread.new do
+printq = Queue.new
+
+print_thread = Thread.new do
+  until printq.closed? && printq.empty?
+    $stdout.print printq.shift
+  end
+end
+
+input_thread = Thread.new do
   until cli.over?
-    $stdout.print cli.to_s $stdin.winsize
-    sleep
+    printq.enq cli.to_s # redraw everything
+    input = $stdin.readpartial 1000
+    input.chars.each { |c| cli.add_input c }
   end
 end
 
-Thread.new do
-  loop do
-    chars = $stdin.readpartial(1000).chars
-    printer.wakeup if chars.map { |c| cli.add_input c }.any?
-  end
-end
-
-Thread.new do
-  loop do
+time_thread = Thread.new do
+  until cli.over?
     sleep 1.0/cli.speed
-    printer.wakeup if cli.update_time Time.now
+    next unless cli.update_time Time.now
+    printq << cli.show_time # redraw just the time
   end
 end
 
-printer.join
+# redraw when the window size changes
+trap 'SIGWINCH' do
+  cli.winsize = $stdin.winsize
+  printq.enq cli.to_s
+end
 
-print cli.final_screen $stdin.winsize
+
+time_thread.join
+input_thread.kill
+
+printq.enq cli.final_screen $stdin.winsize
+printq.close
+print_thread.join
