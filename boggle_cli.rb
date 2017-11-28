@@ -1,6 +1,9 @@
+require 'set'
 require_relative 'boggle'
 
-class BoggleCli
+class Boggle::Cli
+  include Boggle
+
   def initialize(board:, speed:, start_time:, duration:)
     self.board          = board
     self.word           = []

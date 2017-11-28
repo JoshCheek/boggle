@@ -1,10 +1,9 @@
 #!/usr/bin/env ruby
-require 'set'
 require 'io/console'
 require_relative 'boggle_cli'
 
-cli = BoggleCli.new(
-  board:      build_board,
+cli = Boggle::Cli.new(
+  board:      Boggle::build_board,
   speed:      1,
   duration:   60 * 2, # seconds
   start_time: Time.now,

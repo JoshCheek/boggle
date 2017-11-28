@@ -1,6 +1,8 @@
 require_relative 'boggle'
 
 RSpec.describe 'Boggle' do
+  include Boggle
+
   describe 'word_score' do
     specify('length 0  is worth  0') { expect(word_score '').to eq 0 }
     specify('length 1  is worth  0') { expect(word_score 'a').to eq 0 }
@@ -95,17 +97,17 @@ RSpec.describe 'Boggle' do
 
   describe 'dice' do
     specify 'there are 16 of them' do
-      expect(DICE.length).to eq 16
+      expect(Boggle::DICE.length).to eq 16
     end
 
     specify 'they each have 6 sides' do
-      DICE.each do |die|
+      Boggle::DICE.each do |die|
         expect(die.length).to eq 6
       end
     end
 
     specify 'every character is present, including qu' do
-      chars = DICE.flatten.uniq
+      chars = Boggle::DICE.flatten.uniq
       expect(chars).to include 'Qu'
       'A'.upto('Z') do |char|
         if char == 'Q'
@@ -123,7 +125,7 @@ RSpec.describe 'Boggle' do
       board = build_board
       expect(board.length).to eq 4
       board.each { |row| expect(row.length).to eq 4 }
-      dice_chars = DICE.flatten
+      dice_chars = Boggle::DICE.flatten
       board.flatten.all? do |face|
         expect(dice_chars).to include face
       end
