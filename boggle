@@ -5,7 +5,7 @@ require_relative 'boggle_cli'
 cli = Boggle::Cli.new(
   board:      Boggle::build_board,
   speed:      1,
-  duration:   60 * 2, # seconds
+  duration:   2 * 60, # seconds
   start_time: Time.now,
 )
 
@@ -26,10 +26,8 @@ end
 
 Thread.new do
   loop do
-    input = $stdin.readpartial(1000)
-    needs_print = false
-    input.each_char { |char| needs_print ||= cli.add_input char }
-    printer.wakeup if needs_print
+    chars = $stdin.readpartial(1000).chars
+    printer.wakeup if chars.map { |c| cli.add_input c }.any?
   end
 end
 

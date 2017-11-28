@@ -41,9 +41,9 @@ RSpec.describe 'Boggle' do
   end
 
 
-  describe 'matches' do
-    it 'finds matches through adjacent chars' do
-      matches = matches(
+  describe 'path_matches' do
+    it 'finds paths thatmatch through adjacent chars' do
+      matches = path_matches(
         %w[a b c],
         'a' => [[1, 1]],
         'b' => [[2, 1]],
@@ -55,7 +55,7 @@ RSpec.describe 'Boggle' do
     end
 
     it 'allows multiple matches' do
-      matches = matches(
+      matches = path_matches(
         %w[a b c],
         'a' => [[1, 1], [2, 2]],
         'b' => [[2, 1]],
@@ -68,8 +68,8 @@ RSpec.describe 'Boggle' do
     end
 
     it 'does not traverse the same char more than once' do
-      matches1 = matches %w[a b a], 'a' => [[1, 1]],         'b' => [[2, 1]]
-      matches2 = matches %w[a b a], 'a' => [[1, 1], [2, 2]], 'b' => [[2, 1]]
+      matches1 = path_matches %w[a b a], 'a' => [[1, 1]],         'b' => [[2, 1]]
+      matches2 = path_matches %w[a b a], 'a' => [[1, 1], [2, 2]], 'b' => [[2, 1]]
       expect(matches1).to eq []
       expect(matches2).to eq [
         [[1, 1], [2, 1], [2, 2]],
@@ -78,7 +78,7 @@ RSpec.describe 'Boggle' do
     end
 
     it 'does not find paths through non-adjacent chars' do
-      matches = matches(
+      matches = path_matches(
         %w[a b c],
         'a' => [[1, 1]],
         'b' => [[1, 2],
@@ -89,7 +89,7 @@ RSpec.describe 'Boggle' do
     end
 
     it 'does not find paths for chars that DNE in the list' do
-      matches = matches(%w[a b a], 'a' => [[1, 1]], 'c' => [[3, 1]])
+      matches = path_matches(%w[a b a], 'a' => [[1, 1]], 'c' => [[3, 1]])
       expect(matches).to eq []
     end
   end

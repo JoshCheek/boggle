@@ -45,7 +45,7 @@ module Boggle
   end
 
 
-  def matches(word, chars_to_locations)
+  def path_matches(word, chars_to_locations)
     locations = word.map { |char| chars_to_locations[char] }
     return [] unless locations.any? && locations.all?
     first = locations.first.map { |l| [l] }

@@ -16,51 +16,16 @@ class Boggle::Cli
     update_time start_time
   end
 
-  attr_accessor :board, :char_locations, :word, :words
-  attr_accessor :start, :speed, :time_allowed, :now, :time_left, :over
-
-  alias over? over
-
-  # returns true if this changes what would be drawn
-  def add_input(char)
-    if cancel_guess? word, char
-      self.word = []
-      true
-    elsif quit? char
-      self.over = true
-      true
-    elsif submit_guess? char
-      matches = matches(word, char_locations)
-      words << word if matches.any? && !words.include?(word)
-      self.word = []
-      true
-    elsif word.last == "Q" && (char == "u" || char == "U")
-      word.last << "u"
-      true
-    elsif delete? char
-      word.last == 'Qu' ?  word[-1] = 'Q' : word.pop
-      true
-    elsif guess? char
-      word << char.upcase
-      true
-    else
-      false
-    end
+  def hide_cursor
+    "\e[?25l"
   end
 
-  # returns true if this changes what would be drawn
-  def update_time(time)
-    prev_time_left   = time_left
-    prev_over        = over
+  def show_cursor
+    "\e[?25h"
+  end
 
-    self.now         = time
-    seconds          = now - start
-    time_passed      = (speed * seconds).to_i
-    self.time_left   = time_allowed - time_passed
-    self.over        = true if time_left < 0 # allow 1s grace :)
-    self.time_left   = 0    if time_left < 0 # but report it as still being at zero
-
-    prev_over != over || prev_time_left != time_left
+  def over?
+    over
   end
 
 
@@ -82,7 +47,7 @@ class Boggle::Cli
     to_print << sprintf("\e[3;14HScore: %d", score)
 
     # find matches
-    matches = matches(word, char_locations)
+    matches = path_matches(word, char_locations)
 
     # print the board
     to_print << show_board(matches)
@@ -113,21 +78,64 @@ class Boggle::Cli
     to_print
   end
 
-  def hide_cursor
-    "\e[?25l"
+
+  # returns true if this changes what would be drawn
+  def update_time(time)
+    prev_time_left   = time_left
+    prev_over        = over
+
+    self.now         = time
+    seconds          = now - start
+    time_passed      = (speed * seconds).to_i
+    self.time_left   = time_allowed - time_passed
+    self.over        = true if time_left < 0 # allow 1s grace :)
+    self.time_left   = 0    if time_left < 0 # but report it as still being at zero
+
+    prev_over != over || prev_time_left != time_left
   end
 
-  def show_cursor
-    "\e[?25h"
+
+  # returns true if this changes what would be drawn
+  def add_input(char)
+    if cancel_guess? word, char
+      self.word = []
+      true
+    elsif quit? char
+      self.over = true
+      true
+    elsif submit_guess? char
+      matches = path_matches word, char_locations
+      words << word if matches.any? && !words.include?(word)
+      self.word = []
+      true
+    elsif word.last == "Q" && (char == "u" || char == "U")
+      word.last << "u"
+      true
+    elsif delete? char
+      word.last == 'Qu' ?  word[-1] = 'Q' : word.pop
+      true
+    elsif guess? char
+      word << char.upcase
+      true
+    else
+      false
+    end
   end
 
   def final_screen(winsize)
     wordlist_rows, x = winsize
     wordlist_rows -= 8 # for the stuff previously printed
     wordlist_rows = [wordlist_rows, words.size].min
-
     to_s(winsize) << "\r#{"\n"*wordlist_rows}\e[41;97m YOU SCORED #{total_score}!! \e[0m\e[J\r\n"
   end
+
+  attr_reader :speed
+
+  private
+
+  attr_accessor :board, :char_locations, :word, :words
+  attr_accessor :start, :time_allowed, :now, :time_left, :over
+  attr_writer   :speed
 
   def time_colour
     colour = 92                    # green
